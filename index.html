@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="nl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nummerplaat Opslaan en Opzoeken</title>
+</head>
+
+<body>
+    <h1>Nummerplaat Opslaan en Opzoeken</h1>
+    <form id="nummerplaatForm">
+        <label for="nummerplaat">Nummerplaat:</label>
+        <input type="text" id="nummerplaat" name="nummerplaat" required><br><br>
+        <label for="huisnummer">Huisnummer:</label>
+        <input type="text" id="huisnummer" name="huisnummer" required><br><br>
+        <button type="submit">Opslaan</button>
+    </form>
+
+    <h2>Opzoeken van Huisnummer</h2>
+    <input type="text" id="zoekNummerplaat" placeholder="Voer nummerplaat in">
+    <button onclick="zoekHuisnummer()">Opzoeken</button>
+    <div id="resultaat"></div>
+
+    <script>
+        // Functie voor het opslaan van nummerplaat en huisnummer
+        document.getElementById('nummerplaatForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            const nummerplaat = document.getElementById('nummerplaat').value;
+            const huisnummer = document.getElementById('huisnummer').value;
+            opslaanNummerplaat(nummerplaat, huisnummer);
+        });
+
+        function opslaanNummerplaat(nummerplaat, huisnummer) {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/opslaan', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    alert('Gegevens succesvol opgeslagen.');
+                } else if (xhr.readyState === 4 && xhr.status !== 200) {
+                    alert('Fout bij het opslaan van gegevens.');
+                }
+            };
+            xhr.send(JSON.stringify({ nummerplaat: nummerplaat, huisnummer: huisnummer }));
+        }
+
+        // Functie voor het opzoeken van huisnummer bij nummerplaat
+        function zoekHuisnummer() {
+            const nummerplaat = document.getElementById('zoekNummerplaat').value;
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', `/opzoeken/${nummerplaat}`, true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    const resultaat = JSON.parse(xhr.responseText);
+                    document.getElementById('resultaat').innerText = `Huisnummer gevonden: ${resultaat.huisnummer}`;
+                } else if (xhr.readyState === 4 && xhr.status === 404) {
+                    document.getElementById('resultaat').innerText = 'Nummerplaat niet gevonden.';
+                } else if (xhr.readyState === 4 && xhr.status !== 200 && xhr.status !== 404) {
+                    document.getElementById('resultaat').innerText = 'Fout bij het opzoeken van gegevens.';
+                }
+            };
+            xhr.send();
+        }
+    </script>
+</body>
+
+</html>
